@@ -1,5 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
@@ -139,7 +141,106 @@ public class MainGUI extends JFrame {
         // Set initial visibility based on default selection
         updateDynamicFields((String) typeCombo.getSelectedItem());
 
+        // Add Vehicle Button ActionListener
+        addVehicleBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Validate that no visible text fields are empty
+                if (vehicleIdField.getText().trim().isEmpty() ||
+                    modelField.getText().trim().isEmpty() ||
+                    brandField.getText().trim().isEmpty() ||
+                    engineCapacityField.getText().trim().isEmpty()) {
+                    JOptionPane.showMessageDialog(MainGUI.this, "All fields must be filled!", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                String selectedType = (String) typeCombo.getSelectedItem();
+
+                // Validate dynamic fields based on selected type
+                if (selectedType.equals("Car") && doorsField.getText().trim().isEmpty()) {
+                    JOptionPane.showMessageDialog(MainGUI.this, "All fields must be filled!", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                if (selectedType.equals("Van") && loadCapacityField.getText().trim().isEmpty()) {
+                    JOptionPane.showMessageDialog(MainGUI.this, "All fields must be filled!", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                // Parse numeric values with try-catch
+                try {
+                    String vehicleID = vehicleIdField.getText().trim();
+                    String model = modelField.getText().trim();
+                    String brand = brandField.getText().trim();
+                    double engineCapacity = Double.parseDouble(engineCapacityField.getText().trim());
+
+                    Vehicle newVehicle = null;
+
+                    switch (selectedType) {
+                        case "Motorcycle":
+                            boolean hasCarrier = hasCarrierCheckBox.isSelected();
+                            newVehicle = new Motorcycle(vehicleID, model, brand, engineCapacity, hasCarrier);
+                            break;
+                        case "Car":
+                            int doors = Integer.parseInt(doorsField.getText().trim());
+                            newVehicle = new Car(vehicleID, model, brand, engineCapacity, doors);
+                            break;
+                        case "Van":
+                            double loadCapacity = Double.parseDouble(loadCapacityField.getText().trim());
+                            newVehicle = new Van(vehicleID, model, brand, engineCapacity, loadCapacity);
+                            break;
+                    }
+
+                    boolean added = manager.addVehicle(newVehicle);
+                    if (!added) {
+                        JOptionPane.showMessageDialog(MainGUI.this, "Duplicate model detected!", "Error", JOptionPane.ERROR_MESSAGE);
+                    } else {
+                        clearInputFields();
+                        JOptionPane.showMessageDialog(MainGUI.this, "Vehicle added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                    }
+
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(MainGUI.this, "Please enter valid numeric values for Engine Capacity, Number of Doors, and Load Capacity.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        // Search Car Button ActionListener
+        searchCarBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String model = JOptionPane.showInputDialog(MainGUI.this, "Enter the model to search:");
+                if (model != null && !model.trim().isEmpty()) {
+                    Car foundCar = manager.searchCar(model.trim());
+                    if (foundCar != null) {
+                        outputArea.append(foundCar.displayInfo() + "\n-----------------\n");
+                    } else {
+                        outputArea.append("No car found with that model\n-----------------\n");
+                    }
+                }
+            }
+        });
+
+        // Display All Button ActionListener
+        displayAllBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String allVehicles = manager.displayAllVehicles();
+                outputArea.setText("");
+                outputArea.setText(allVehicles);
+            }
+        });
+
         add(mainPanel);
+    }
+
+    private void clearInputFields() {
+        vehicleIdField.setText("");
+        modelField.setText("");
+        brandField.setText("");
+        engineCapacityField.setText("");
+        doorsField.setText("");
+        loadCapacityField.setText("");
+        hasCarrierCheckBox.setSelected(false);
     }
 
     private void updateDynamicFields(String type) {
