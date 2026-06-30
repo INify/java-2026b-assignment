@@ -1,0 +1,32 @@
+# Compiled class files
+*.class
+
+# Build folders
+/target/
+/build/
+/bin/
+/out/
+
+# Dependency folders
+/lib/
+/libs/
+/dependency/
+/jars/
+
+# JDK tools (these are on your system, not in your project)
+# (We are ignoring the folders that contain javac, jar, etc.)
+*.log
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+oracleJdk-26.jdk/
